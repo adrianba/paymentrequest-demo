@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'/>
+	<title>Web Payments Tests</title>
+    <link rel='stylesheet' href='/resources/testharness.css' media='all'/>
+
+	<script src="paymentrequest.js"></script>
+<body>
+    <h1>Description</h1>
+    <p>
+      This test checks that the <code>PaymentRequest</code> runs correctly.
+    </p>
+    <div id='log'></div>
+    <script src='/resources/testharness.js'></script>
+    <script src='/resources/testharnessreport.js'></script>
+    <script>
+      test(function () {
+          assert_true(undefined !== PaymentRequest, "PaymentRequest exists");
+      }, "PaymentRequest is defined");
+
+      /////////////////////
+      // Constructor tests
+      /////////////////////
+      test(function () {
+          assert_throws(new SyntaxError(), function() {
+          	new PaymentRequest();
+          }, "SyntaxError expected because supportMethods is missing");
+      }, "PaymentRequest constructor validates that supportedMethods argument is not optional");
+
+      test(function () {
+          assert_throws(new SyntaxError(), function() {
+          	new PaymentRequest("string");
+          }, "SyntaxError expected because supportedMethods should be an array not a string");
+      }, "PaymentRequest constructor validates that supportedMethods is an array");
+
+      test(function () {
+          assert_throws(new SyntaxError(), function() {
+          	new PaymentRequest([]);
+          }, "SyntaxError expected because supportedMethods cannot be an empty array");
+      }, "PaymentRequest constructor validates that supportedMethods is not an empty array");
+
+      test(function () {
+          assert_throws(new SyntaxError(), function() {
+          	new PaymentRequest(['method']);
+          }, "SyntaxError expected because PaymentDetails argument is missing");
+      }, "PaymentRequest constructor validates that PaymentDetails argument is not optional");
+
+      test(function () {
+ 		  new PaymentRequest(['method'], { });
+      }, "PaymentRequest successfully constructed with valid arguments");
+
+      /////////////////////
+      // show() tests
+      /////////////////////
+      test(function () {
+          assert_throws({name:"InvalidStateError"}, function() {
+          	var request = new PaymentRequest(['method'], { });
+          	request.show();
+          	request.show();
+      	  }, "InvalidStateError expected when calling show() twice");
+      }, "Calling show() twice throws InvalidStateError");
+
+      function notacceptedTest() {
+	      var test = async_test("show() with no accepted payment methods rejects promise with NotSupportedError");
+
+	      var request = new PaymentRequest(
+	      	['notaccepted'],
+	      	{ items:[{}] },
+	      	{ __walletUrl: "payment-tests-wallet.html" }
+	      	);
+
+	      request.show()
+	      	.then(test.step_func(function(response) {
+	      		assert_unreached("Promise should have been rejected with NotSupportedError but resolved instead.");
+	      	}))
+	      	.catch(test.step_func(function(e) {
+		      	assert_equals(e.name,"NotSupportedError","Promise should have been rejected with NotSupportedError");
+		      	assert_equals(request.state,"closed","After rejection, state should be closed");
+		      	assert_throws({name:"InvalidStateError"}, function() {
+		      		request.complete(false);
+		      	},"complete() should throw from closed state");
+		      	test.done();
+		    }));
+      }
+      notacceptedTest();
+
+      function invalidDataTest() {
+	      var test = async_test("show() with invalid payment data rejects promise with InvalidAccessError");
+
+	      var request = new PaymentRequest(['accepted'], { }, { }, { "notaccepted":{}});
+
+	      request.show()
+	      	.then(test.step_func(function(response) {
+	      		assert_unreached("Promise should have been rejected with InvalidAccessError but resolved instead.");
+	      	}))
+	      	.catch(test.step_func(function(e) {
+		      	assert_equals(e.name,"InvalidAccessError","Promise should have been rejected with InvalidAccessError");
+		      	assert_equals(request.state,"closed","After rejection, state should be closed");
+		      	test.done();
+	        }));
+	  }
+	  invalidDataTest();
+
+	  function acceptedTest() {
+	      var test = async_test("show() with one accepted payment methods resolves promise with that method");
+	      var request = new PaymentRequest(['accepted'], { items: [{}] }, { __walletUrl: "payment-tests-wallet.html" }, { "accepted":{}});
+	      request.show().then(test.step_func(function(response) {
+	      	assert_equals(response.methodName,"accepted","Promise should have been resolved with 'accepted' method");
+	      	assert_equals(request.state,"accepted","State of request should be accepted");
+	      	request.complete(true);
+	      	assert_equals(request.state,"closed","State of request should be closed after complete()");
+	      	assert_throws({name:"InvalidStateError"}, function() {
+	      		request.complete(false);
+	      	},"complete() should throw when in the closed state");
+	      	test.done();
+	      })).catch(test.step_func(function(e) {
+	      	assert_unreached("Promise should not have been rejected. " + e.name);
+	      }));
+	  }
+	  acceptedTest();
+
+      /////////////////////
+      // abort() tests
+      /////////////////////
+      test(function () {
+          assert_throws({name:"InvalidStateError"}, function() {
+          	var request = new PaymentRequest(['method'], { });
+          	request.abort();
+      	  }, "InvalidStateError expected when calling abort() in created state");
+      }, "Calling abort() in created state throws InvalidStateError");
+
+      /////////////////////
+      // complete() tests
+      /////////////////////
+      test(function () {
+          assert_throws({name:"InvalidStateError"}, function() {
+          	var request = new PaymentRequest(['method'], { });
+          	request.complete(false);
+      	  }, "InvalidStateError expected when calling complete() in created state");
+      }, "Calling complete() in created state throws InvalidStateError");
+
+    </script>
+</body>
+</html>

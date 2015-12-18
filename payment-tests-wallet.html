@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Wallet to support payment-tests.html</title>
+<script src="paymentrequest-wallethelper.js"></script>
+<script>
+var helper = new PaymentRequestWalletHelper();
+helper.oninit = init;
+
+var acceptableMethods = ['accepted'];
+
+function init(data) {
+	// Validate whether any supported methods are accepted
+	var accepted = helper.acceptedMethodIntersection(data.supportedMethods,acceptableMethods);
+	if(accepted.length==0) {
+		helper.rejectPromise({name:"NotSupportedError"});
+		return;
+	}
+
+	helper.acceptPayment({
+		methodName: "accepted",
+		data: {}
+	});
+}
+
+</script>
+</head>
+<body>
+</body>
+</html>
