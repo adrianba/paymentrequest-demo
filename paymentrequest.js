@@ -99,7 +99,7 @@ function PaymentRequest(supportedMethods,details,options,data) {
 	function shippingAddressChange(address) {
 		if(_state!="interactive" || _updating) throw { name: "InvalidStateError" };
 		_request.shippingAddress = address;
-		var e = new PaymentRequestUpdateEvent("shippingaddresschange", { _walletFrame:_walletFrame,_id:_id });
+		var e = new PaymentRequestUpdateEvent("shippingaddresschange", { __update:update });
 		_updating = true;
 		_request.onshippingaddresschange(e);
 	}
@@ -107,9 +107,14 @@ function PaymentRequest(supportedMethods,details,options,data) {
 	function shippingOptionChange(optionid) {
 		if(_state!="interactive" || _updating) throw { name: "InvalidStateError" };
 		_request.shippingOption = optionid;
-		var e = new PaymentRequestUpdateEvent("shippingoptionchange", { _walletFrame:_walletFrame,_id:_id });
+		var e = new PaymentRequestUpdateEvent("shippingoptionchange", { __update:update });
 		_updating = true;
 		_request.onshippingoptionchange(e);
+	}
+
+	function update(details) {
+		_updating = false;
+		postToWallet("update",details);
 	}
 
 	function oninit() {
@@ -136,10 +141,6 @@ function PaymentRequest(supportedMethods,details,options,data) {
 
 			case "reject":
 				rejectPromise(cmd.data);
-				break;
-
-			case "updated":
-				_updating = false;
 				break;
 
 			case "shippingaddresschange":
@@ -170,14 +171,9 @@ function PaymentRequest(supportedMethods,details,options,data) {
 
 function PaymentRequestUpdateEvent(type,eventinit) {
 	var _type = type;
-	var _walletFrame = eventinit._walletFrame;
-	var _id = eventinit._id;
+	var _update = eventinit.__update;
 
 	this.updatePaymentRequest = function(details) {
-		postToWallet("update",details);
-	}
-
-	function postToWallet(name,data) {
-		_walletFrame.contentWindow.postMessage({name:name,id:_id,data:data},"*");
+		_update(details);
 	}
 }

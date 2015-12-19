@@ -41,7 +41,6 @@ function PaymentRequestWalletHelper() {
 				this.oninit(cmd.data);
 				break;
 			case "update":
-				post("updated");
 				this.onupdate(cmd.data);
 				break;
 			default:
