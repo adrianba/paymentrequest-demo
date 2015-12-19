@@ -17,7 +17,16 @@ function PaymentRequestWalletHelper() {
 		post("reject",data);
 	}
 
+	this.setShippingAddress = function(address) {
+		post("shippingaddresschange",address);
+	}
+
+	this.setShippingOption = function(optionid) {
+		post("shippingoptionchange",optionid);
+	}
+
 	this.oninit = function(data) {};
+	this.onupdate = function(data) {};
 
 	function post(name,data) {
 		window.parent.postMessage({name:name,id:_id,data:data},"*");
@@ -31,6 +40,12 @@ function PaymentRequestWalletHelper() {
 				_id = cmd.id;
 				this.oninit(cmd.data);
 				break;
+			case "update":
+				post("updated");
+				this.onupdate(cmd.data);
+				break;
+			default:
+				throw { name: "InvalidAccessError" };
 		}
 	}
 

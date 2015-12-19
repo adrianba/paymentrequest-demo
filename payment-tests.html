@@ -61,7 +61,7 @@
       	  }, "InvalidStateError expected when calling show() twice");
       }, "Calling show() twice throws InvalidStateError");
 
-      function notacceptedTest() {
+      (function() {
 	      var test = async_test("show() with no accepted payment methods rejects promise with NotSupportedError");
 
 	      var request = new PaymentRequest(
@@ -82,10 +82,9 @@
 		      	},"complete() should throw from closed state");
 		      	test.done();
 		    }));
-      }
-      notacceptedTest();
+      })();
 
-      function invalidDataTest() {
+      (function() {
 	      var test = async_test("show() with invalid payment data rejects promise with InvalidAccessError");
 
 	      var request = new PaymentRequest(['accepted'], { }, { }, { "notaccepted":{}});
@@ -99,26 +98,65 @@
 		      	assert_equals(request.state,"closed","After rejection, state should be closed");
 		      	test.done();
 	        }));
-	  }
-	  invalidDataTest();
+  	  })();
 
-	  function acceptedTest() {
+	    (function() {
 	      var test = async_test("show() with one accepted payment methods resolves promise with that method");
+
 	      var request = new PaymentRequest(['accepted'], { items: [{}] }, { __walletUrl: "payment-tests-wallet.html" }, { "accepted":{}});
-	      request.show().then(test.step_func(function(response) {
-	      	assert_equals(response.methodName,"accepted","Promise should have been resolved with 'accepted' method");
-	      	assert_equals(request.state,"accepted","State of request should be accepted");
-	      	request.complete(true);
-	      	assert_equals(request.state,"closed","State of request should be closed after complete()");
-	      	assert_throws({name:"InvalidStateError"}, function() {
-	      		request.complete(false);
-	      	},"complete() should throw when in the closed state");
-	      	test.done();
-	      })).catch(test.step_func(function(e) {
-	      	assert_unreached("Promise should not have been rejected. " + e.name);
-	      }));
-	  }
-	  acceptedTest();
+
+	      request.show()
+          .then(test.step_func(function(response) {
+  	      	assert_equals(response.methodName,"accepted","Promise should have been resolved with 'accepted' method");
+  	      	assert_equals(request.state,"accepted","State of request should be accepted");
+  	      	request.complete(true);
+  	      	assert_equals(request.state,"closed","State of request should be closed after complete()");
+  	      	assert_throws({name:"InvalidStateError"}, function() {
+  	      		request.complete(false);
+  	      	},"complete() should throw when in the closed state");
+  	      	test.done();
+  	      }))
+          .catch(test.step_func(function(e) {
+  	      	assert_unreached("Promise should not have been rejected. " + e.name);
+  	      }));
+	    })();
+
+      (function() {
+        var test = async_test("payment request with requestShipping resolves successfully");
+        var addresschange = false, optionchange = false;
+
+        var request = new PaymentRequest(
+          ['accepted'],
+          { items: [{}] },
+          { requestShipping:true, __walletUrl: "payment-tests-wallet.html" },
+          { "accepted":{}}
+        );
+        request.onshippingaddresschange = function(e) {
+          addresschange = true;
+          e.updatePaymentRequest({shippingOptions:[]});
+        };
+        request.onshippingoptionchange = function(e) {
+          optionchange = true;
+          e.updatePaymentRequest({});
+        };
+
+        request.show()
+          .then(test.step_func(function(response) {
+            assert_equals(response.methodName,"accepted","Promise should have been resolved with 'accepted' method");
+            assert_equals(request.state,"accepted","State of request should be accepted");
+            request.complete(true);
+            assert_equals(request.state,"closed","State of request should be closed after complete()");
+            assert_throws({name:"InvalidStateError"}, function() {
+              request.complete(false);
+            },"complete() should throw when in the closed state");
+            assert_true(addresschange,"onshippingaddresschange should have been called");
+            assert_true(optionchange,"onshippingoptionchange should have been called");
+            test.done();
+          }))
+          .catch(test.step_func(function(e) {
+            assert_unreached("Promise should not have been rejected. " + e.name);
+          }));
+      })();
 
       /////////////////////
       // abort() tests

@@ -6,6 +6,7 @@
 <script>
 var helper = new PaymentRequestWalletHelper();
 helper.oninit = init;
+helper.onupdate = update;
 
 var acceptableMethods = ['accepted'];
 
@@ -17,10 +18,25 @@ function init(data) {
 		return;
 	}
 
-	helper.acceptPayment({
-		methodName: "accepted",
-		data: {}
-	});
+	if(data.options.requestShipping) {
+		helper.setShippingAddress({});
+	} else {
+		helper.acceptPayment({
+			methodName: "accepted",
+			data: {}
+		});
+	}
+}
+
+function update(details) {
+	if(details.shippingOptions) {
+		helper.setShippingOption("id");
+	} else {
+		helper.acceptPayment({
+			methodName: "accepted",
+			data: {}
+		});
+	}
 }
 
 </script>

@@ -16,13 +16,12 @@ function PaymentRequest(supportedMethods,details,options,data) {
 	var _updating = false;
 	var _state = "created";
 	var _walletFrame = null;
-	var _walletInit = null;
+	var _request = this;
 	var _messageHandler = null;
 
 	this.show = function() {
 		if(_state!="created") throw { name: "InvalidStateError", message: "show() can only be called in the created state" };
 		_state = "interactive";
-		var that = this;
 		return new Promise(function(resolve,reject) {
 			_approvePaymentResolve = resolve;
 			_approvePaymentReject = reject;
@@ -78,16 +77,15 @@ function PaymentRequest(supportedMethods,details,options,data) {
 		_walletFrame.height = 500;
 		_walletFrame.width = "100%";
 		_walletFrame.style.display = "none";
-		_walletInit = oninit.bind(this);
-		_walletFrame.addEventListener("load",_walletInit,false);
+		_walletFrame.addEventListener("load",oninit,false);
 		document.body.appendChild(_walletFrame);
 
-		_messageHandler = onmessage.bind(this);
-		addEventListener("message",_messageHandler,false);
+		_messageHandler = onmessage.bind(_request);
+		window.addEventListener("message",_messageHandler,false);
 	}
 
 	function acceptPayment(response) {
-		// Accept payment request - this is temporary and should actually get the user to accept
+		if(_state!="interactive" || _updating) throw { name: "InvalidStateError" };
 		_state = "accepted";
 		_approvePaymentResolve(response);
 	}
@@ -98,9 +96,24 @@ function PaymentRequest(supportedMethods,details,options,data) {
 		_approvePaymentReject(data);
 	}
 
+	function shippingAddressChange(address) {
+		if(_state!="interactive" || _updating) throw { name: "InvalidStateError" };
+		_request.shippingAddress = address;
+		var e = new PaymentRequestUpdateEvent("shippingaddresschange", { _walletFrame:_walletFrame,_id:_id });
+		_updating = true;
+		_request.onshippingaddresschange(e);
+	}
+
+	function shippingOptionChange(optionid) {
+		if(_state!="interactive" || _updating) throw { name: "InvalidStateError" };
+		_request.shippingOption = optionid;
+		var e = new PaymentRequestUpdateEvent("shippingoptionchange", { _walletFrame:_walletFrame,_id:_id });
+		_updating = true;
+		_request.onshippingoptionchange(e);
+	}
+
 	function oninit() {
-		_walletFrame.removeEventListener("load",_walletInit,false);
-		_walletInit = null;
+		_walletFrame.removeEventListener("load",oninit,false);
 		postToWallet("init",{
 			supportedMethods: _supportedMethods,
 			details: _details,
@@ -125,6 +138,18 @@ function PaymentRequest(supportedMethods,details,options,data) {
 				rejectPromise(cmd.data);
 				break;
 
+			case "updated":
+				_updating = false;
+				break;
+
+			case "shippingaddresschange":
+				shippingAddressChange(cmd.data);
+				break;
+
+			case "shippingoptionchange":
+				shippingOptionChange(cmd.data);
+				break;
+
 			default:
 				// unknown command
 				throw { name: "InvalidAccessError" };
@@ -133,12 +158,26 @@ function PaymentRequest(supportedMethods,details,options,data) {
 
 	function disposeWallet() {
 		if(_messageHandler) {
-			removeEventListener("message",_messageHandler,false);
+			window.removeEventListener("message",_messageHandler,false);
 			_messageHandler = null;
 		}
 		if(_walletFrame) {
 			document.body.removeChild(_walletFrame);
 			_walletFrame = null;
 		}
+	}
+}
+
+function PaymentRequestUpdateEvent(type,eventinit) {
+	var _type = type;
+	var _walletFrame = eventinit._walletFrame;
+	var _id = eventinit._id;
+
+	this.updatePaymentRequest = function(details) {
+		postToWallet("update",details);
+	}
+
+	function postToWallet(name,data) {
+		_walletFrame.contentWindow.postMessage({name:name,id:_id,data:data},"*");
 	}
 }
