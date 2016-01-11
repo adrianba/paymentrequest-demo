@@ -74,9 +74,7 @@ function PaymentRequest(supportedMethods,details,options,data) {
 	function setupWallet(url) {
 		_walletFrame = document.createElement("iframe");
 		_walletFrame.src = url;
-		_walletFrame.height = 500;
-		_walletFrame.width = "100%";
-		_walletFrame.style.display = "none";
+        _walletFrame.setAttribute("style","position:absolute;left:0px;top:0px;width:100%;height:100%;border:0px;");
 		_walletFrame.addEventListener("load",oninit,false);
 		document.body.appendChild(_walletFrame);
 

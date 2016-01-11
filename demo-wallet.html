@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Demo Wallet</title>
+<script src="paymentrequest-wallethelper.js"></script>
+<link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
+<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+<script src="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/bootstrap.min.js"></script>
+
+<script>
+"use strict";
+
+var helper = new PaymentRequestWalletHelper();
+helper.oninit = init;
+helper.onupdate = update;
+
+var acceptableMethods = ['visa','mc'];
+var acceptedPurchase = false;
+var addressSelected = false;
+var details,options,methodData;
+
+function init(data) {
+  // Validate whether any supported methods are accepted
+  var accepted = helper.acceptedMethodIntersection(data.supportedMethods,acceptableMethods);
+  if(accepted.length==0) {
+    helper.rejectPromise({name:"NotSupportedError"});
+    return;
+  }
+
+  details = data.details;
+  options = data.options;
+  methodData = data.data;
+
+  $('#myModal').on('hide.bs.modal', function (e) {
+    if(!acceptedPurchase) {
+      helper.rejectPromise({name:'cancelled'});
+    }
+  });
+
+  updateBuyButton();
+
+  populateItemsTable();
+  populateShippingOptions();
+
+  $('#myModal').modal({
+    backdrop: 'static',
+    keyboard: true,
+    show: true
+  });
+}
+
+function update(updatedDetails) {
+  // update wallet display
+  if(updatedDetails.items) {
+    details.items = updatedDetails.items;
+    populateItemsTable();
+  }
+  if(updatedDetails.shippingOptions) {
+    details.shippingOptions = updatedDetails.shippingOptions;
+    populateShippingOptions();
+  }
+  updateBuyButton();
+}
+
+function buy() {
+  acceptedPurchase = true;
+  helper.acceptPayment({
+    methodName: "accepted",
+    data: {}
+  });
+}
+
+function updateBuyButton() {
+  if(!options.requestShipping || addressSelected) {
+    document.getElementById('buyButton').removeAttribute('disabled');
+  }
+}
+
+function populateItemsTable() {
+  var itemsTable = document.getElementById('itemsTable');
+  itemsTable.innerHTML = "";
+  for(var c=0; c<details.items.length; c++) {
+    let item = details.items[c];
+    let last = c===details.items.length-1;
+    let tr = document.createElement("tr");
+    if(last) tr.className = "success";
+    let label = document.createElement("td");
+    label.textContent = item.label;
+    let price = document.createElement("td");
+    price.setAttribute("align","right");
+    price.textContent = (item.amount.mantissa * Math.pow(10.0,item.amount.exponent)).toFixed(2);
+    tr.appendChild(label);
+    tr.appendChild(price);
+    itemsTable.appendChild(tr);
+  }
+}
+
+function populateShippingOptions() {
+  var shippingOption = document.getElementById('shippingOption');
+  var shippingOptionList = document.getElementById('shippingOptionList');
+  var valid = details.shippingOptions && details.shippingOptions.length>0;
+  if(!valid) {
+    shippingOption.setAttribute("disabled","disabled");
+    shippingOption.textContent = '*** not available ***';
+    shippingOptionList.innerHTML = '<li><a href="#">Select shipping option...</a></li>';
+  } else {
+    shippingOption.removeAttribute("disabled");
+    shippingOption.textContent = 'Select Shipping Option';
+    shippingOptionList.innerHTML = "";
+    for(var c=0; c<details.shippingOptions.length; c++) {
+      var item = details.shippingOptions[c];
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.setAttribute("href","#");
+      a.addEventListener("click",shippingOptionChange.bind(item),false);
+      var amount =
+      a.textContent = item.label + " (" + (item.amount.mantissa * Math.pow(10.0,item.amount.exponent)).toFixed(2) + ")";
+      li.appendChild(a);
+      shippingOptionList.appendChild(li);
+    }
+  }
+}
+
+function addressChange(x) {
+  addressSelected = true;
+  document.getElementById("addr1").className = (x===1) ? "btn btn-primary" : "btn btn-default";
+  document.getElementById("addr2").className = (x===2) ? "btn btn-primary" : "btn btn-default";
+  document.getElementById("addr3").className = (x===3) ? "btn btn-primary" : "btn btn-default";
+  helper.setShippingAddress({
+    address:""
+  });
+}
+
+function shippingOptionChange() {
+  document.getElementById('shippingOption').textContent = this.label;
+  helper.setShippingOption(this.id);
+}
+</script>
+</head>
+<body style="background-color:transparent;">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Demo Wallet</h4>
+      </div>
+      <div class="modal-body">
+        <!-- Card -->
+        <div>
+          <img src="card.png" width="180" alt="Credit card from Your Bank">
+        </div>
+
+        <!-- Address -->
+        <h4>Ship To</h4>
+        <div class="panel panel-default" style="display:inline-block">
+          <div class="panel-body">
+            6825 Amber Moor<br>Illinoistown<br>WA 98940<br>(253) 099-9684
+            <br><br>
+            <button id="addr1" class="btn btn-default" onclick="addressChange(1)">Use this address</button>
+          </div>
+        </div>
+        <div class="panel panel-default" style="display:inline-block">
+          <div class="panel-body">
+            491 Stony Gate Grove<br>Hazard<br>WA 98749<br>(509) 028-4863
+            <br><br>
+            <button id="addr2" class="btn btn-default" onclick="addressChange(2)">Use this address</button>
+          </div>
+        </div>
+        <div class="panel panel-default" style="display:inline-block">
+          <div class="panel-body">
+            6716 Broad Row<br>Gypsum<br>WA 98114<br>(206) 042-5222
+            <br><br>
+            <button id="addr3" class="btn btn-default" onclick="addressChange(3)">Use this address</button>
+          </div>
+        </div>
+
+        <h4>Shipping Option</h4>
+        <div class="dropdown">
+          <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
+            Select Shipping Option
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
+            <li><a href="#">Select shipping option...</a></li>
+          </ul>
+        </div>
+
+        <h4>Summary</h4>
+          <!-- Items Table -->
+          <table class="table table-striped">
+            <tbody id="itemsTable">
+            </tbody>
+          </table>
+      <div class="modal-footer">
+        <div style="float:left;" id="statusMessage"></div>
+        <button type="button" id="cancelButton" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="submit" id="buyButton" class="btn btn-primary" onclick="buy()" disabled>Buy</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

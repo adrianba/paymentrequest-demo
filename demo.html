@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PaymentRequest Demo</title>
+  <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
+  <script src="paymentrequest.js"></script>
+  <script language="javascript">
+
+  function go() {
+    var request = new PaymentRequest(
+      ['visa','mc','amex'],
+      {
+        items: [
+          {
+            id: "basket",
+            label: "Sub-total",
+            amount: { currencyCode: "USD", mantissa: 5500, exponent: -2 }, // US$55.00
+          },
+          {
+            id: "tax",
+            label: "Sales Tax",
+            amount: { currencyCode: "USD", mantissa: 500, exponent: -2 }, // US$5.00
+          },
+          {
+            id: "total",
+            label: "Total due",
+            amount: { currencyCode: "USD", mantissa: 6000, exponent: -2 }, // US$60.00
+          }
+        ]
+      },
+      { requestShipping:true, __walletUrl: "demo-wallet.html" }
+    );
+    request.onshippingaddresschange = function(e) {
+      // here request.shippingaddress is the address
+      e.updatePaymentRequest({
+        shippingOptions: [
+          { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", mantissa: 2500, exponent:-2 } },
+          { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", mantissa: 800, exponent:-2 } }
+        ]
+      });
+    };
+    request.onshippingoptionchange = function(e) {
+      // here request.shippingOption is the id of the option
+      var express = request.shippingOption=="express";
+      e.updatePaymentRequest({
+        items: [
+          {
+            id: "basket",
+            label: "Sub-total",
+            amount: { currencyCode: "USD", mantissa: 5500, exponent: -2 }, // US$55.00
+          },
+          {
+            id: "tax",
+            label: "Sales Tax",
+            amount: { currencyCode: "USD", mantissa: 500, exponent: -2 }, // US$5.00
+          },
+          {
+            id: "shipping",
+            label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
+            amount: { currencyCode: "USD", mantissa: express ? 2500 : 800, exponent: -2 }, // US$5.00
+          },
+          {
+            id: "total",
+            label: "Total due",
+            amount: { currencyCode: "USD", mantissa: express ? 8500 : 6800, exponent: -2 }, // US$60.00 + SHIPPING
+          }
+        ]
+      });
+    };
+
+    request.show()
+      .then(function(response) {
+        alert("Buy!");
+        request.complete(true);
+      })
+      .catch(function(e) {
+        alert(e.name);
+      });
+  }
+  </script>
+</head>
+<body style="margin:1em;">
+  <button class="btn" onclick="go()">Demo</button>
+</body>
+</html>
