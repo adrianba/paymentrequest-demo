@@ -88,7 +88,7 @@ function populateItemsTable() {
     label.textContent = item.label;
     let price = document.createElement("td");
     price.setAttribute("align","right");
-    price.textContent = (item.amount.mantissa * Math.pow(10.0,item.amount.exponent)).toFixed(2);
+    price.textContent = item.amount.value;
     tr.appendChild(label);
     tr.appendChild(price);
     itemsTable.appendChild(tr);
@@ -114,7 +114,7 @@ function populateShippingOptions() {
       a.setAttribute("href","#");
       a.addEventListener("click",shippingOptionChange.bind(item),false);
       var amount =
-      a.textContent = item.label + " (" + (item.amount.mantissa * Math.pow(10.0,item.amount.exponent)).toFixed(2) + ")";
+      a.textContent = item.label + " (" + item.amount.value + ")";
       li.appendChild(a);
       shippingOptionList.appendChild(li);
     }

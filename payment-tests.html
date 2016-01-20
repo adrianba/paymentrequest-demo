@@ -55,7 +55,7 @@
       /////////////////////
       test(function () {
           assert_throws({name:"InvalidStateError"}, function() {
-            var request = new PaymentRequest(['method'], { });
+            var request = new PaymentRequest(['method'], { items:[{}] });
             request.show();
             request.show();
           }, "InvalidStateError expected when calling show() twice");
@@ -84,21 +84,12 @@
         }));
       })();
 
-      (function() {
-        var test = async_test("show() with invalid payment data rejects promise with InvalidAccessError");
-
-        var request = new PaymentRequest(['accepted'], { }, { }, { "notaccepted":{}});
-
-        request.show()
-          .then(test.step_func(function(response) {
-            assert_unreached("Promise should have been rejected with InvalidAccessError but resolved instead.");
-          }))
-          .catch(test.step_func(function(e) {
-            assert_equals(e.name,"InvalidAccessError","Promise should have been rejected with InvalidAccessError");
-            assert_equals(request.state,"closed","After rejection, state should be closed");
-            test.done();
-          }));
-      })();
+      test(function () {
+          assert_throws({name:"InvalidAccessError"}, function() {
+          var request = new PaymentRequest(['accepted'], { }, { }, { "notaccepted":{}});
+          request.show();
+          }, "InvalidAccessError expected because payment method data doesn't match supported method");
+      }, "show() with invalid payment data throws InvalidAccessError");
 
       (function() {
         var test = async_test("show() with one accepted payment methods resolves promise with that method");

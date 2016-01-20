@@ -20,23 +20,25 @@ function PaymentRequest(supportedMethods,details,options,data) {
 	var _messageHandler = null;
 
 	this.show = function() {
-		if(_state!="created") throw { name: "InvalidStateError", message: "show() can only be called in the created state" };
+		if(_state!="created") {
+            throw { name: "InvalidStateError", message: "show() can only be called in the created state" };
+        }
+
+        // Ensure details is valid
+        if(_details.items===undefined || !Array.isArray(_details.items) || _details.items.length<1) {
+            throw { name: "InvalidAccessError", message: "details must contain at least one item" };
+        }
+
+        // Set default for requestShipping
+        if(_options.requestShipping===undefined) {
+            _options.requestShipping = false;
+        }
+
 		_state = "interactive";
+
 		return new Promise(function(resolve,reject) {
 			_approvePaymentResolve = resolve;
 			_approvePaymentReject = reject;
-
-			// Ensure details is valid
-			if(_details.items===undefined || !Array.isArray(_details.items) || _details.items.length<1) {
-				_state = "closed";
-				_approvePaymentReject({name:"InvalidAccessError", message: "details must contain at least 1 item"});
-				return;
-			}
-
-			// Set default for requestShipping
-			if(_options.requestShipping===undefined) {
-				_options.requestShipping = false;
-			}
 
 			// Ensure data is valid - attributes must match supported methods
 			for(var c in _data) {

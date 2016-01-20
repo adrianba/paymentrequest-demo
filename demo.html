@@ -14,17 +14,17 @@
           {
             id: "basket",
             label: "Sub-total",
-            amount: { currencyCode: "USD", mantissa: 5500, exponent: -2 }, // US$55.00
+            amount: { currencyCode: "USD", value: "55.00" }, // US$55.00
           },
           {
             id: "tax",
             label: "Sales Tax",
-            amount: { currencyCode: "USD", mantissa: 500, exponent: -2 }, // US$5.00
+            amount: { currencyCode: "USD", value: "5.00" }, // US$5.00
           },
           {
             id: "total",
             label: "Total due",
-            amount: { currencyCode: "USD", mantissa: 6000, exponent: -2 }, // US$60.00
+            amount: { currencyCode: "USD", value: "60.00" }, // US$60.00
           }
         ]
       },
@@ -34,8 +34,8 @@
       // here request.shippingaddress is the address
       e.updatePaymentRequest({
         shippingOptions: [
-          { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", mantissa: 2500, exponent:-2 } },
-          { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", mantissa: 800, exponent:-2 } }
+          { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", value: "25.00" } },
+          { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", value: "8.00" } }
         ]
       });
     };
@@ -47,22 +47,22 @@
           {
             id: "basket",
             label: "Sub-total",
-            amount: { currencyCode: "USD", mantissa: 5500, exponent: -2 }, // US$55.00
+            amount: { currencyCode: "USD", value: "55.00" }, // US$55.00
           },
           {
             id: "tax",
             label: "Sales Tax",
-            amount: { currencyCode: "USD", mantissa: 500, exponent: -2 }, // US$5.00
+            amount: { currencyCode: "USD", value: "5.00" }, // US$5.00
           },
           {
             id: "shipping",
             label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
-            amount: { currencyCode: "USD", mantissa: express ? 2500 : 800, exponent: -2 }, // US$5.00
+            amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" }, // US$5.00
           },
           {
             id: "total",
             label: "Total due",
-            amount: { currencyCode: "USD", mantissa: express ? 8500 : 6800, exponent: -2 }, // US$60.00 + SHIPPING
+            amount: { currencyCode: "USD", value: express ? "85.00" : "68.00" }, // US$60.00 + SHIPPING
           }
         ]
       });
