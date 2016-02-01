@@ -17,6 +17,7 @@ helper.onupdate = update;
 var acceptableMethods = ['visa','mc'];
 var acceptedPurchase = false;
 var addressSelected = false;
+var shippingSelected = false;
 var details,options,methodData;
 
 function init(data) {
@@ -71,7 +72,7 @@ function buy() {
 }
 
 function updateBuyButton() {
-  if(!options.requestShipping || addressSelected) {
+  if(!options.requestShipping || (addressSelected && shippingSelected)) {
     document.getElementById('buyButton').removeAttribute('disabled');
   } else {
     document.getElementById('buyButton').setAttribute('disabled','disabled');
@@ -101,6 +102,7 @@ function populateShippingOptions() {
   var shippingOption = document.getElementById('shippingOption');
   var shippingOptionList = document.getElementById('shippingOptionList');
   var valid = details.shippingOptions && details.shippingOptions.length>0;
+  shippingSelected = false;
   if(!valid) {
     shippingOption.setAttribute("disabled","disabled");
     shippingOption.textContent = '*** not available ***';
@@ -134,6 +136,7 @@ function addressChange(x) {
 }
 
 function shippingOptionChange() {
+  shippingSelected = true;
   document.getElementById('shippingOption').textContent = this.label;
   helper.setShippingOption(this.id);
 }
