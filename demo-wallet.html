@@ -73,6 +73,8 @@ function buy() {
 function updateBuyButton() {
   if(!options.requestShipping || addressSelected) {
     document.getElementById('buyButton').removeAttribute('disabled');
+  } else {
+    document.getElementById('buyButton').setAttribute('disabled','disabled');
   }
 }
 
@@ -195,7 +197,7 @@ function shippingOptionChange() {
       <div class="modal-footer">
         <div style="float:left;" id="statusMessage"></div>
         <button type="button" id="cancelButton" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="submit" id="buyButton" class="btn btn-primary" onclick="buy()" disabled>Buy</button>
+        <button type="submit" id="buyButton" class="btn btn-primary" onclick="buy()" disabled="disabled">Buy</button>
       </div>
     </div>
   </div>
