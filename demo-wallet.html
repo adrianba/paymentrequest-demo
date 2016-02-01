@@ -80,13 +80,13 @@ function populateItemsTable() {
   var itemsTable = document.getElementById('itemsTable');
   itemsTable.innerHTML = "";
   for(var c=0; c<details.items.length; c++) {
-    let item = details.items[c];
-    let last = c===details.items.length-1;
-    let tr = document.createElement("tr");
+    var item = details.items[c];
+    var last = c===details.items.length-1;
+    var tr = document.createElement("tr");
     if(last) tr.className = "success";
-    let label = document.createElement("td");
+    var label = document.createElement("td");
     label.textContent = item.label;
-    let price = document.createElement("td");
+    var price = document.createElement("td");
     price.setAttribute("align","right");
     price.textContent = item.amount.value;
     tr.appendChild(label);
