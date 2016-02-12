@@ -3,19 +3,21 @@
 <head>
   <meta charset='utf-8'/>
   <title>Web Payments Tests</title>
-  <link rel='stylesheet' href='/resources/testharness.css' media='all'/>
-  <script src="/lib/paymentrequest.js"></script>
+  <link rel='stylesheet' href='../resources/testharness.css' media='all'/>
+  <script src="../lib/paymentrequest.js"></script>
 </head>
 <body>
-    <div><a href="/">Index</a></div>
+    <div><a href="../index.html">Index</a></div>
     <h1>Description</h1>
     <p>
       This test checks that the <code>PaymentRequest</code> runs correctly.
     </p>
     <div id='log'></div>
-    <script src='/resources/testharness.js'></script>
-    <script src='/resources/testharnessreport.js'></script>
+    <script src='../resources/testharness.js'></script>
+    <script src='../resources/testharnessreport.js'></script>
     <script>
+      window.__walletUrl = "payment-tests-wallet.html";
+
       test(function () {
           assert_true(undefined !== PaymentRequest, "PaymentRequest exists");
       }, "PaymentRequest is defined");
@@ -79,8 +81,7 @@
 
         var request = new PaymentRequest(
           ['notaccepted'],
-          { items:[{}] },
-          { __walletUrl: "payment-tests-wallet.html" }
+          { items:[{}] }
           );
 
         request.show()
@@ -107,7 +108,7 @@
       (function() {
         var test = async_test("show() with one accepted payment methods resolves promise with that method");
 
-        var request = new PaymentRequest(['accepted'], { items: [{}] }, { __walletUrl: "payment-tests-wallet.html" }, { "accepted":{}});
+        var request = new PaymentRequest(['accepted'], { items: [{}] }, { }, { "accepted":{}});
 
         request.show()
           .then(test.step_func(function(response) {
@@ -132,7 +133,7 @@
         var request = new PaymentRequest(
           ['accepted'],
           { items: [{}] },
-          { requestShipping:true, __walletUrl: "payment-tests-wallet.html" },
+          { requestShipping:true },
           { "accepted":{}}
         );
         request.onshippingaddresschange = function(e) {
