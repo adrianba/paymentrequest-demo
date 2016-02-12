@@ -90,10 +90,7 @@
           }))
           .catch(test.step_func(function(e) {
             assert_equals(e.name,"NotSupportedError","Promise should have been rejected with NotSupportedError");
-            assert_equals(request.state,"closed","After rejection, state should be closed");
-            assert_throws({name:"InvalidStateError"}, function() {
-              request.complete(false);
-            },"complete() should throw from closed state");
+            assert_equals(request._debugOnlyState,"closed","After rejection, state should be closed");
             test.done();
         }));
       })();
@@ -113,12 +110,12 @@
         request.show()
           .then(test.step_func(function(response) {
             assert_equals(response.methodName,"accepted","Promise should have been resolved with 'accepted' method");
-            assert_equals(request.state,"accepted","State of request should be accepted");
-            request.complete(true);
-            assert_equals(request.state,"closed","State of request should be closed after complete()");
+            assert_equals(request._debugOnlyState,"closed","State of request should be closed");
+            response.complete(true);
+            assert_equals(request._debugOnlyState,"closed","State of request should be closed after complete()");
             assert_throws({name:"InvalidStateError"}, function() {
-              request.complete(false);
-            },"complete() should throw when in the closed state");
+              response.complete(false);
+            },"complete() should throw when if called a second time");
             test.done();
           }))
           .catch(test.step_func(function(e) {
@@ -148,12 +145,12 @@
         request.show()
           .then(test.step_func(function(response) {
             assert_equals(response.methodName,"accepted","Promise should have been resolved with 'accepted' method");
-            assert_equals(request.state,"accepted","State of request should be accepted");
-            request.complete(true);
-            assert_equals(request.state,"closed","State of request should be closed after complete()");
+            assert_equals(request._debugOnlyState,"closed","State of request should be accepted");
+            response.complete(true);
+            assert_equals(request._debugOnlyState,"closed","State of request should be closed after complete()");
             assert_throws({name:"InvalidStateError"}, function() {
-              request.complete(false);
-            },"complete() should throw when in the closed state");
+              response.complete(false);
+            },"complete() should throw if called a second time");
             assert_true(addresschange,"onshippingaddresschange should have been called");
             assert_true(optionchange,"onshippingoptionchange should have been called");
             test.done();
@@ -172,16 +169,6 @@
             request.abort();
           }, "InvalidStateError expected when calling abort() in created state");
       }, "Calling abort() in created state throws InvalidStateError");
-
-      /////////////////////
-      // complete() tests
-      /////////////////////
-      test(function () {
-          assert_throws({name:"InvalidStateError"}, function() {
-            var request = new PaymentRequest(['method'], { items:[{}] });
-            request.complete(false);
-          }, "InvalidStateError expected when calling complete() in created state");
-      }, "Calling complete() in created state throws InvalidStateError");
 
     </script>
 </body>

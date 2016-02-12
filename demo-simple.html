@@ -23,8 +23,11 @@
 
     request.show()
       .then(function(response) {
+        // process transaction response here
+        return response.complete(true);
+      })
+      .then(function() {
         alert("Buy!");
-        request.complete(true);
       })
       .catch(function(e) {
         alert(e.name);
