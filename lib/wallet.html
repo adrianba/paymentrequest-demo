@@ -113,7 +113,13 @@ function populateShippingOptions() {
     shippingOptionList.innerHTML = '<li><a href="#">Select shipping option...</a></li>';
   } else {
     shippingOption.removeAttribute("disabled");
-    shippingOption.textContent = (details.shippingOptions.length==1) ? details.shippingOptions[0].label : 'Select Shipping Option';
+    if(details.shippingOptions.length==1) {
+      var selectedOption = details.shippingOptions[0];
+      shippingOption.textContent = selectedOption.label;
+      helper.setShippingOption(selectedOption.id);
+    } else {
+      shippingOption.textContent = 'Select Shipping Option';
+    }
     shippingOptionList.innerHTML = "";
     for(var c=0; c<details.shippingOptions.length; c++) {
       var item = details.shippingOptions[c];
