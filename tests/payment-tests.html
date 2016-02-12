@@ -48,7 +48,19 @@
       }, "PaymentRequest constructor validates that PaymentDetails argument is not optional");
 
       test(function () {
-      new PaymentRequest(['method'], { });
+          assert_throws({name:"InvalidAccessError"}, function() {
+            new PaymentRequest(['method'], { });
+          }, "InvalidAccessError expected because PaymentDetails.items argument is missing");
+      }, "PaymentRequest constructor validates that PaymentDetails.items data is not optional");
+
+      test(function () {
+          assert_throws({name:"InvalidAccessError"}, function() {
+            new PaymentRequest(['method'], { items: [] });
+          }, "InvalidAccessError expected because PaymentDetails.items is of length 0");
+      }, "PaymentRequest constructor validates that PaymentDetails.items must have length > 0");
+
+      test(function () {
+      new PaymentRequest(['method'], { items:[{}] });
       }, "PaymentRequest successfully constructed with valid arguments");
 
       /////////////////////
@@ -155,7 +167,7 @@
       /////////////////////
       test(function () {
           assert_throws({name:"InvalidStateError"}, function() {
-            var request = new PaymentRequest(['method'], { });
+            var request = new PaymentRequest(['method'], { items:[{}] });
             request.abort();
           }, "InvalidStateError expected when calling abort() in created state");
       }, "Calling abort() in created state throws InvalidStateError");
@@ -165,7 +177,7 @@
       /////////////////////
       test(function () {
           assert_throws({name:"InvalidStateError"}, function() {
-            var request = new PaymentRequest(['method'], { });
+            var request = new PaymentRequest(['method'], { items:[{}] });
             request.complete(false);
           }, "InvalidStateError expected when calling complete() in created state");
       }, "Calling complete() in created state throws InvalidStateError");
