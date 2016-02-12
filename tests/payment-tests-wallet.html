@@ -30,7 +30,7 @@ function init(data) {
 
 function update(details) {
 	if(details.shippingOptions) {
-		helper.setShippingOption("id");
+		helper.setShippingOption("id",true);
 	} else {
 		helper.acceptPayment({
 			methodName: "accepted",

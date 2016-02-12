@@ -13,12 +13,14 @@
 var helper = new PaymentRequestWalletHelper();
 helper.oninit = init;
 helper.onupdate = update;
+helper.onupdating = updating;
 
 var acceptableMethods = ['visa','mc'];
 var acceptedPurchase = false;
 var addressSelected = false;
 var shippingSelected = false;
 var details,options,methodData;
+var isUpdating = false;
 
 function init(data) {
   // Validate whether any supported methods are accepted
@@ -67,6 +69,11 @@ function update(updatedDetails) {
   updateBuyButton();
 }
 
+function updating(data) {
+  isUpdating = data;
+  updateBuyButton();
+}
+
 function buy() {
   acceptedPurchase = true;
   helper.acceptPayment({
@@ -76,7 +83,10 @@ function buy() {
 }
 
 function updateBuyButton() {
-  if(!options.requestShipping || (addressSelected && shippingSelected)) {
+  var enabled = !options.requestShipping || (addressSelected && shippingSelected);
+  if(isUpdating) enabled = false;
+
+  if(enabled) {
     document.getElementById('buyButton').removeAttribute('disabled');
   } else {
     document.getElementById('buyButton').setAttribute('disabled','disabled');
@@ -116,7 +126,8 @@ function populateShippingOptions() {
     if(details.shippingOptions.length==1) {
       var selectedOption = details.shippingOptions[0];
       shippingOption.textContent = selectedOption.label;
-      helper.setShippingOption(selectedOption.id);
+      helper.setShippingOption(selectedOption.id,false);
+      shippingSelected = true;
     } else {
       shippingOption.textContent = 'Select Shipping Option';
     }
@@ -143,12 +154,14 @@ function addressChange(x) {
   helper.setShippingAddress({
     address:""
   });
+  updateBuyButton();
 }
 
 function shippingOptionChange() {
   shippingSelected = true;
   document.getElementById('shippingOption').textContent = this.label;
-  helper.setShippingOption(this.id);
+  helper.setShippingOption(this.id,true);
+  updateBuyButton();
 }
 </script>
 </head>

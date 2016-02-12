@@ -33,41 +33,47 @@
     );
     request.onshippingaddresschange = function(e) {
       // here request.shippingaddress is the address
-      e.updatePaymentRequest({
-        shippingOptions: [
-          { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", value: "25.00" } },
-          { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", value: "8.00" } }
-        ]
-      });
+      e.updateWith(new Promise(function(resolve,reject) {
+        setTimeout(function() {
+          resolve({
+            shippingOptions: [
+              { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", value: "25.00" } },
+              { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", value: "8.00" } }
+            ]
+          });
+        },3000);
+      }));
     };
     request.onshippingoptionchange = function(e) {
       // here request.shippingOption is the id of the option
       var express = request.shippingOption=="express";
-      e.updatePaymentRequest({
-        items: [
-          {
-            id: "basket",
-            label: "Sub-total",
-            amount: { currencyCode: "USD", value: "55.00" } // US$55.00
-          },
-          {
-            id: "tax",
-            label: "Sales Tax",
-            amount: { currencyCode: "USD", value: "5.00" } // US$5.00
-          },
-          {
-            id: "shipping",
-            label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
-            amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" }, // US$5.00
-            shipping: true
-          },
-          {
-            id: "total",
-            label: "Total due",
-            amount: { currencyCode: "USD", value: express ? "85.00" : "68.00" } // US$60.00 + SHIPPING
-          }
-        ]
-      });
+      e.updateWith(new Promise(function(resolve,reject) {
+        resolve({
+          items: [
+            {
+              id: "basket",
+              label: "Sub-total",
+              amount: { currencyCode: "USD", value: "55.00" } // US$55.00
+            },
+            {
+              id: "tax",
+              label: "Sales Tax",
+              amount: { currencyCode: "USD", value: "5.00" } // US$5.00
+            },
+            {
+              id: "shipping",
+              label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
+              amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" }, // US$5.00
+              shipping: true
+            },
+            {
+              id: "total",
+              label: "Total due",
+              amount: { currencyCode: "USD", value: express ? "85.00" : "68.00" } // US$60.00 + SHIPPING
+            }
+          ]
+        });
+      }));
     };
 
     request.show()

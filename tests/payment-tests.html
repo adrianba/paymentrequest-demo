@@ -135,11 +135,15 @@
         );
         request.onshippingaddresschange = function(e) {
           addresschange = true;
-          e.updatePaymentRequest({shippingOptions:[]});
+          e.updateWith(new Promise(function(resolve,reject) {
+            resolve({shippingOptions:[]});
+          }));
         };
         request.onshippingoptionchange = function(e) {
           optionchange = true;
-          e.updatePaymentRequest({});
+          e.updateWith(new Promise(function(resolve,reject) {
+            resolve({});
+          }));
         };
 
         request.show()
