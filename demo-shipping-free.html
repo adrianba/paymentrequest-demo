@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Request shipping address with free worldwide delivery</title>
+  <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/vs.min.css">
+  <script src="/lib/paymentrequest.js"></script>
+  <script language="javascript" id="payment-script">
+
+  function go() {
+    var request = new PaymentRequest(
+      ['visa','mc','amex'],
+      {
+        items: [
+          {
+            id: "basket",
+            label: "Sub-total",
+            amount: { currencyCode: "USD", value: "55.00" } // US$55.00
+          },
+          {
+            id: "shipping",
+            label: "FREE shipping",
+            amount: { currencyCode: "USD", value: "0.00"}, // US$0.00
+            shipping: true
+          },
+          {
+            id: "tax",
+            label: "Sales Tax",
+            amount: { currencyCode: "USD", value: "5.00" } // US$5.00
+          },
+          {
+            id: "total",
+            label: "Total due",
+            amount: { currencyCode: "USD", value: "60.00" } // US$60.00
+          }
+        ],
+        shippingOptions: [
+          { id: "free", label: "FREE shipping", amount: { currencyCode: "USD", value: "0.00" } }
+        ]
+      },
+      { requestShipping:true }
+    );
+
+    request.show()
+      .then(function(response) {
+        alert("Buy!");
+        request.complete(true);
+      })
+      .catch(function(e) {
+        alert(e.name);
+      });
+  }
+  </script>
+</head>
+<body style="margin:1em;">
+  <a href="/">Index</a>
+  <button class="btn" onclick="go()">Request shipping address with free worldwide delivery</button>
+
+  <div>
+  <h3>Script</h3>
+  <pre><code id="script-display"></code></pre>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script>
+  <script>
+  document.getElementById("script-display").textContent = document.getElementById("payment-script").text;
+  hljs.initHighlightingOnLoad();
+  </script>
+</body>
+</html>

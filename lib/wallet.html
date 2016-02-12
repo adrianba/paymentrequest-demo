@@ -32,6 +32,10 @@ function init(data) {
   options = data.options;
   methodData = data.data;
 
+  if(!options.requestShipping) {
+    document.getElementById("shipping-panel").style.display = "none";
+  }
+
   $('#myModal').on('hide.bs.modal', function (e) {
     if(!acceptedPurchase) {
       helper.rejectPromise({name:'cancelled'});
@@ -109,7 +113,7 @@ function populateShippingOptions() {
     shippingOptionList.innerHTML = '<li><a href="#">Select shipping option...</a></li>';
   } else {
     shippingOption.removeAttribute("disabled");
-    shippingOption.textContent = 'Select Shipping Option';
+    shippingOption.textContent = (details.shippingOptions.length==1) ? details.shippingOptions[0].label : 'Select Shipping Option';
     shippingOptionList.innerHTML = "";
     for(var c=0; c<details.shippingOptions.length; c++) {
       var item = details.shippingOptions[c];
@@ -157,38 +161,40 @@ function shippingOptionChange() {
         </div>
 
         <!-- Address -->
-        <h4>Ship To</h4>
-        <div class="panel panel-default" style="display:inline-block">
-          <div class="panel-body">
-            6825 Amber Moor<br>Illinoistown<br>WA 98940<br>(253) 099-9684
-            <br><br>
-            <button id="addr1" class="btn btn-default" onclick="addressChange(1)">Use this address</button>
+        <div id="shipping-panel">
+          <h4>Ship To</h4>
+          <div class="panel panel-default" style="display:inline-block">
+            <div class="panel-body">
+              6825 Amber Moor<br>Illinoistown<br>WA 98940<br>(253) 099-9684
+              <br><br>
+              <button id="addr1" class="btn btn-default" onclick="addressChange(1)">Use this address</button>
+            </div>
           </div>
-        </div>
-        <div class="panel panel-default" style="display:inline-block">
-          <div class="panel-body">
-            491 Stony Gate Grove<br>Hazard<br>WA 98749<br>(509) 028-4863
-            <br><br>
-            <button id="addr2" class="btn btn-default" onclick="addressChange(2)">Use this address</button>
+          <div class="panel panel-default" style="display:inline-block">
+            <div class="panel-body">
+              491 Stony Gate Grove<br>Hazard<br>WA 98749<br>(509) 028-4863
+              <br><br>
+              <button id="addr2" class="btn btn-default" onclick="addressChange(2)">Use this address</button>
+            </div>
           </div>
-        </div>
-        <div class="panel panel-default" style="display:inline-block">
-          <div class="panel-body">
-            6716 Broad Row<br>Gypsum<br>WA 98114<br>(206) 042-5222
-            <br><br>
-            <button id="addr3" class="btn btn-default" onclick="addressChange(3)">Use this address</button>
+          <div class="panel panel-default" style="display:inline-block">
+            <div class="panel-body">
+              6716 Broad Row<br>Gypsum<br>WA 98114<br>(206) 042-5222
+              <br><br>
+              <button id="addr3" class="btn btn-default" onclick="addressChange(3)">Use this address</button>
+            </div>
           </div>
-        </div>
 
-        <h4>Shipping Option</h4>
-        <div class="dropdown">
-          <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
-            Select Shipping Option
-            <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
-            <li><a href="#">Select shipping option...</a></li>
-          </ul>
+          <h4>Shipping Option</h4>
+          <div class="dropdown">
+            <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
+              Select Shipping Option
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
+              <li><a href="#">Select shipping option...</a></li>
+            </ul>
+          </div>
         </div>
 
         <h4>Summary</h4>

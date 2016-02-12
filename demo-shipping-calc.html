@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>PaymentRequest Demo</title>
+<title>Request shipping address and calculate shipping options</title>
   <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
-  <script src="paymentrequest.js"></script>
-  <script language="javascript">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/vs.min.css">
+  <script src="/lib/paymentrequest.js"></script>
+  <script language="javascript" id="payment-script">
 
   function go() {
     var request = new PaymentRequest(
@@ -28,7 +29,7 @@
           }
         ]
       },
-      { requestShipping:true, __walletUrl: "demo-wallet.html" }
+      { requestShipping:true }
     );
     request.onshippingaddresschange = function(e) {
       // here request.shippingaddress is the address
@@ -47,22 +48,23 @@
           {
             id: "basket",
             label: "Sub-total",
-            amount: { currencyCode: "USD", value: "55.00" }, // US$55.00
+            amount: { currencyCode: "USD", value: "55.00" } // US$55.00
           },
           {
             id: "tax",
             label: "Sales Tax",
-            amount: { currencyCode: "USD", value: "5.00" }, // US$5.00
+            amount: { currencyCode: "USD", value: "5.00" } // US$5.00
           },
           {
             id: "shipping",
             label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
             amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" }, // US$5.00
+            shipping: true
           },
           {
             id: "total",
             label: "Total due",
-            amount: { currencyCode: "USD", value: express ? "85.00" : "68.00" }, // US$60.00 + SHIPPING
+            amount: { currencyCode: "USD", value: express ? "85.00" : "68.00" } // US$60.00 + SHIPPING
           }
         ]
       });
@@ -80,6 +82,17 @@
   </script>
 </head>
 <body style="margin:1em;">
-  <button class="btn" onclick="go()">Demo</button>
+  <a href="/">Index</a>
+  <button class="btn" onclick="go()">Request shipping address and calculate shipping options</button>
+
+  <div>
+  <h3>Script</h3>
+  <pre><code id="script-display"></code></pre>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script>
+  <script>
+  document.getElementById("script-display").textContent = document.getElementById("payment-script").text;
+  hljs.initHighlightingOnLoad();
+  </script>
 </body>
 </html>
