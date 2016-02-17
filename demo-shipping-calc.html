@@ -4,6 +4,10 @@
 <title>Request shipping address and calculate shipping options</title>
   <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/vs.min.css">
+  <style>
+    #script-display { padding-left: 40px; position: relative; }
+    #script-display .line { position: absolute; left: 0; width: 30px; text-align: right; display: inline-block; padding-right:3px; border-right: 1px solid grey; }
+  </style>
   <script src="lib/paymentrequest.js"></script>
   <script language="javascript" id="payment-script">
   function go() {
@@ -104,6 +108,15 @@
   <script>
   document.getElementById("script-display").textContent = document.getElementById("payment-script").text;
   hljs.initHighlighting();
+  function number(e) {
+    var l = 0;
+    var html = e.innerHTML.replace(/\n/g,function() {
+      l++;
+      return "\n" + '<a class="line" name="L' + l + '" href="#L' + l + '">' + l + '</a>';
+    });
+    e.innerHTML = html;
+  }
+  number(document.getElementById("script-display"));
   </script>
 </body>
 </html>
