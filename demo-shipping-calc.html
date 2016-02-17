@@ -24,7 +24,7 @@
           },
           {
             id: "total",
-            label: "Total due",
+            label: "Total excluding shipping",
             amount: { currencyCode: "USD", value: "60.00" }, // US$60.00
           }
         ]
@@ -33,16 +33,7 @@
     );
     request.onshippingaddresschange = function(e) {
       // here request.shippingaddress is the address
-      e.updateWith(new Promise(function(resolve,reject) {
-        setTimeout(function() {
-          resolve({
-            shippingOptions: [
-              { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", value: "25.00" } },
-              { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", value: "8.00" } }
-            ]
-          });
-        },3000);
-      }));
+      e.updateWith(calculateShippingCost(request));
     };
     request.onshippingoptionchange = function(e) {
       // here request.shippingOption is the id of the option
@@ -63,8 +54,7 @@
             {
               id: "shipping",
               label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
-              amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" }, // US$5.00
-              shipping: true
+              amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" } // US$5.00
             },
             {
               id: "total",
@@ -87,6 +77,19 @@
       .catch(function(e) {
         alert(e.name);
       });
+  }
+
+  function calculateShippingCost(r) {
+    return new Promise(function(resolve,reject) {
+        setTimeout(function() { // use setTimeOut to emulate delayed results
+          resolve({
+            shippingOptions: [
+              { id: "express", label: "Express 2-day shipping", amount: { currencyCode: "USD", value: "25.00" } },
+              { id: "ground", label: "Ground 5-7 day shipping", amount: { currencyCode: "USD", value: "8.00" } }
+            ]
+          });
+        },2000);
+      })
   }
   </script>
 </head>

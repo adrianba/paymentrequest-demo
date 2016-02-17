@@ -21,6 +21,7 @@ var addressSelected = false;
 var shippingSelected = false;
 var details,options,methodData;
 var isUpdating = false;
+var selectedPaymentApp = 1;
 
 function init(data) {
   // Validate whether any supported methods are accepted
@@ -157,6 +158,11 @@ function addressChange(x) {
   updateBuyButton();
 }
 
+function paymentAppChange(x) {
+  selectedPaymentApp = x;
+  document.getElementById("selectedCard").innerHTML = document.getElementById("card"+x.toString()).innerHTML;
+}
+
 function shippingOptionChange() {
   shippingSelected = true;
   document.getElementById('shippingOption').textContent = this.label;
@@ -175,8 +181,15 @@ function shippingOptionChange() {
       </div>
       <div class="modal-body">
         <!-- Card -->
-        <div>
-          <img src="card.png" width="180" alt="Credit card from Your Bank">
+        <div class="dropdown">
+          <button class="btn btn-default dropdown-toggle" type="button" id="cardDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span id="selectedCard"><img src="card1.png" width="180" alt="Credit card from Secure Bank"></span>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+            <li><a href="#" id="card1" onclick="paymentAppChange(1)"><img src="card1.png" width="180" alt="Credit card from Secure Bank"></a></li>
+            <li><a href="#" id="card2" onclick="paymentAppChange(2)"><img src="card2.png" width="180" alt="Credit card from Best Bank"></a></li>
+          </ul>
         </div>
 
         <!-- Address -->
