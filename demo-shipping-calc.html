@@ -16,18 +16,15 @@
       {
         items: [
           {
-            id: "basket",
-            label: "Sub-total",
+            id: "basket", label: "Sub-total",
             amount: { currencyCode: "USD", value: "55.00" }, // US$55.00
           },
           {
-            id: "tax",
-            label: "Sales Tax",
+            id: "tax", label: "Sales Tax",
             amount: { currencyCode: "USD", value: "5.00" }, // US$5.00
           },
           {
-            id: "total",
-            label: "Total excluding shipping",
+            id: "total", label: "Total excluding shipping",
             amount: { currencyCode: "USD", value: "60.00" }, // US$60.00
           }
         ]
@@ -45,23 +42,19 @@
         resolve({
           items: [
             {
-              id: "basket",
-              label: "Sub-total",
+              id: "basket", label: "Sub-total",
               amount: { currencyCode: "USD", value: "55.00" } // US$55.00
             },
             {
-              id: "tax",
-              label: "Sales Tax",
+              id: "tax", label: "Sales Tax",
               amount: { currencyCode: "USD", value: "5.00" } // US$5.00
             },
             {
-              id: "shipping",
-              label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
+              id: "shipping", label: "Shipping - " + express ? "Express (2 day)" : "Ground (5-7 day)",
               amount: { currencyCode: "USD", value: express ? "25.00" : "8.00" } // US$5.00
             },
             {
-              id: "total",
-              label: "Total due",
+              id: "total", label: "Total due",
               amount: { currencyCode: "USD", value: express ? "85.00" : "68.00" } // US$60.00 + SHIPPING
             }
           ]

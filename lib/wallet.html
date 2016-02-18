@@ -4,6 +4,16 @@
 <title>Demo Wallet</title>
 <script src="paymentrequest-wallethelper.js"></script>
 <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
+<style>
+.flexcenter {
+  display:flex;
+  align-items: center;
+}
+.modal-body {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+}
+</style>
 <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
 <script src="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/bootstrap.min.js"></script>
 
@@ -38,6 +48,12 @@ function init(data) {
   if(!options.requestShipping) {
     document.getElementById("shipping-panel").style.display = "none";
   }
+
+  if(data.origin) {
+    document.getElementById("originname").textContent = data.origin;
+  }
+
+  paymentAppChange(1);
 
   $('#myModal').on('hide.bs.modal', function (e) {
     if(!acceptedPurchase) {
@@ -78,7 +94,7 @@ function updating(data) {
 function buy() {
   acceptedPurchase = true;
   helper.acceptPayment({
-    methodName: "accepted",
+    methodName: acceptableMethods[selectedPaymentApp-1],
     data: {}
   });
 }
@@ -177,18 +193,30 @@ function shippingOptionChange() {
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Demo Wallet</h4>
+        <h4 class="modal-title" id="myModalLabel">Payment Requested from <span id="originname"></span></h4>
       </div>
       <div class="modal-body">
         <!-- Card -->
         <div class="dropdown">
           <button class="btn btn-default dropdown-toggle" type="button" id="cardDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            <span id="selectedCard"><img src="card1.png" width="180" alt="Credit card from Secure Bank"></span>
-            <span class="caret"></span>
+            <div class="flexcenter">
+            <div id="selectedCard"></div>
+            <div class="caret"></div>
+            </div>
           </button>
           <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-            <li><a href="#" id="card1" onclick="paymentAppChange(1)"><img src="card1.png" width="180" alt="Credit card from Secure Bank"></a></li>
-            <li><a href="#" id="card2" onclick="paymentAppChange(2)"><img src="card2.png" width="180" alt="Credit card from Best Bank"></a></li>
+            <li><a href="#" id="card1" onclick="paymentAppChange(1)">
+              <div class="flexcenter">
+                <img src="card1.png" width="180" alt="Credit card from Secure Bank">
+                <div style="padding:10px;text-align: left;"><strong>Mr Jack Smith</strong><br>6825 Amber Moor<br>Illinoistown<br>WA 98940</div>
+              </div>
+            </a></li>
+            <li><a href="#" id="card2" onclick="paymentAppChange(2)">
+              <div class="flexcenter">
+                <img src="card2.png" width="180" alt="Credit card from Best Bank">
+                <div style="padding:10px;text-align: left;"><strong>Mr Jack Smith</strong><br>491 Stony Gate Grove<br>Hazard<br>WA 98749</div>
+              </div>
+            </a></li>
           </ul>
         </div>
 
