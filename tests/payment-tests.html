@@ -26,39 +26,39 @@
       // Constructor tests
       /////////////////////
       test(function () {
-          assert_throws(new SyntaxError(), function() {
+          assert_throws(new TypeError(), function() {
             new PaymentRequest();
-          }, "SyntaxError expected because supportMethods is missing");
+          }, "TypeError expected because supportMethods is missing");
       }, "PaymentRequest constructor validates that supportedMethods argument is not optional");
 
       test(function () {
-          assert_throws(new SyntaxError(), function() {
+          assert_throws(new TypeError(), function() {
             new PaymentRequest("string");
-          }, "SyntaxError expected because supportedMethods should be an array not a string");
+          }, "TypeError expected because supportedMethods should be an array not a string");
       }, "PaymentRequest constructor validates that supportedMethods is an array");
 
       test(function () {
-          assert_throws(new SyntaxError(), function() {
+          assert_throws(new TypeError(), function() {
             new PaymentRequest([]);
-          }, "SyntaxError expected because supportedMethods cannot be an empty array");
+          }, "TypeError expected because supportedMethods cannot be an empty array");
       }, "PaymentRequest constructor validates that supportedMethods is not an empty array");
 
       test(function () {
-          assert_throws(new SyntaxError(), function() {
+          assert_throws(new TypeError(), function() {
             new PaymentRequest(['method']);
-          }, "SyntaxError expected because PaymentDetails argument is missing");
+          }, "TypeError expected because PaymentDetails argument is missing");
       }, "PaymentRequest constructor validates that PaymentDetails argument is not optional");
 
       test(function () {
-          assert_throws({name:"InvalidAccessError"}, function() {
+          assert_throws(new TypeError(), function() {
             new PaymentRequest(['method'], { });
-          }, "InvalidAccessError expected because PaymentDetails.items argument is missing");
+          }, "TypeError expected because PaymentDetails.items argument is missing");
       }, "PaymentRequest constructor validates that PaymentDetails.items data is not optional");
 
       test(function () {
-          assert_throws({name:"InvalidAccessError"}, function() {
+          assert_throws(new TypeError(), function() {
             new PaymentRequest(['method'], { items: [] });
-          }, "InvalidAccessError expected because PaymentDetails.items is of length 0");
+          }, "TypeError expected because PaymentDetails.items is of length 0");
       }, "PaymentRequest constructor validates that PaymentDetails.items must have length > 0");
 
       test(function () {
@@ -96,11 +96,11 @@
       })();
 
       test(function () {
-          assert_throws({name:"InvalidAccessError"}, function() {
+          assert_throws(new TypeError(), function() {
           var request = new PaymentRequest(['accepted'], { }, { }, { "notaccepted":{}});
           request.show();
-          }, "InvalidAccessError expected because payment method data doesn't match supported method");
-      }, "show() with invalid payment data throws InvalidAccessError");
+          }, "TypeError expected because payment method data doesn't match supported method");
+      }, "show() with invalid payment data throws TypeError");
 
       (function() {
         var test = async_test("show() with one accepted payment methods resolves promise with that method");
