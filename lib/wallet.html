@@ -26,7 +26,7 @@ helper.oninit = init;
 helper.onupdate = update;
 helper.onupdating = updating;
 
-var acceptableMethods = ['visa','mc'];
+var acceptableMethods = ['urn:payment:visa','urn:payment:mc'];
 var acceptedPurchase = false;
 var addressSelected = false;
 var shippingSelected = false;
@@ -36,7 +36,7 @@ var selectedPaymentApp = 1;
 
 function init(data) {
   // Validate whether any supported methods are accepted
-  var accepted = helper.acceptedMethodIntersection(data.supportedMethods,acceptableMethods);
+  var accepted = helper.acceptedMethodIntersection(data.methodData,acceptableMethods);
   if(accepted.length==0) {
     helper.rejectPromise({name:"NotSupportedError"});
     return;
@@ -76,8 +76,14 @@ function init(data) {
 
 function update(updatedDetails) {
   // update wallet display
-  if(updatedDetails.items) {
-    details.items = updatedDetails.items;
+  if(updatedDetails.total) {
+    details.total = updatedDetails.total;
+  }
+  if(updatedDetails.displayItems) {
+    details.displayItems = updatedDetails.displayItems;
+  }
+  if(updatedDetails.total || updatedDetails.displayItems) {
+    details.displayItems = updatedDetails.displayItems;
     populateItemsTable();
   }
   if(updatedDetails.shippingOptions) {
@@ -111,14 +117,9 @@ function updateBuyButton() {
   }
 }
 
-function populateItemsTable() {
-  var itemsTable = document.getElementById('itemsTable');
-  itemsTable.innerHTML = "";
-  for(var c=0; c<details.items.length; c++) {
-    var item = details.items[c];
-    var last = c===details.items.length-1;
+function createItemRow(item,isTotal) {
     var tr = document.createElement("tr");
-    if(last) tr.className = "success";
+    if(isTotal) tr.className = "success";
     var label = document.createElement("td");
     label.textContent = item.label;
     var price = document.createElement("td");
@@ -126,8 +127,17 @@ function populateItemsTable() {
     price.textContent = item.amount.value;
     tr.appendChild(label);
     tr.appendChild(price);
-    itemsTable.appendChild(tr);
+    return tr;
+}
+
+function populateItemsTable() {
+  var itemsTable = document.getElementById('itemsTable');
+  itemsTable.innerHTML = "";
+  for(var c=0; c<details.displayItems.length; c++) {
+    var item = details.displayItems[c];
+    itemsTable.appendChild(createItemRow(item,false));
   }
+  itemsTable.appendChild(createItemRow(details.total,true));
 }
 
 function populateShippingOptions() {

@@ -12,7 +12,7 @@ var acceptableMethods = ['accepted'];
 
 function init(data) {
 	// Validate whether any supported methods are accepted
-	var accepted = helper.acceptedMethodIntersection(data.supportedMethods,acceptableMethods);
+	var accepted = helper.acceptedMethodIntersection(data.methodData,acceptableMethods);
 	if(accepted.length==0) {
 		helper.rejectPromise({name:"NotSupportedError"});
 		return;

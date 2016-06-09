@@ -12,9 +12,15 @@
   <script language="javascript" id="payment-script">
   function go() {
     var request = new PaymentRequest(
-      ['visa','mc','amex'],
+      [{
+        supportedMethods:['urn:payment:visa','urn:payment:mc','urn:payment:amex']
+      }],
       {
-        items: [
+        total: {
+            label: "Total due",
+            amount: { currencyCode: "USD", value: "60.00" }, // US$60.00
+        },
+        displayItems: [
           {
             id: "basket", label: "Sub-total",
             amount: { currencyCode: "USD", value: "55.00" } // US$55.00
@@ -26,10 +32,6 @@
           {
             id: "tax", label: "Sales Tax",
             amount: { currencyCode: "USD", value: "5.00" } // US$5.00
-          },
-          {
-            id: "total", label: "Total due",
-            amount: { currencyCode: "USD", value: "60.00" } // US$60.00
           }
         ],
         shippingOptions: [

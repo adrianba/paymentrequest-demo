@@ -12,14 +12,14 @@
   <script language="javascript" id="payment-script">
   function go() {
     var request = new PaymentRequest(
-      ['visa','mc','amex'],
+      [{
+        supportedMethods:['urn:payment:visa','urn:payment:mc','urn:payment:amex']
+      }],
       {
-        items: [
-          {
-            id: "total", label: "Total due",
+        total: {
+            label: "Total due",
             amount: { currencyCode: "USD", value: "60.00" }, // US$60.00
-          }
-        ]
+        }
       }
     );
 
