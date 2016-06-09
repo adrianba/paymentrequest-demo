@@ -133,9 +133,11 @@ function createItemRow(item,isTotal) {
 function populateItemsTable() {
   var itemsTable = document.getElementById('itemsTable');
   itemsTable.innerHTML = "";
-  for(var c=0; c<details.displayItems.length; c++) {
-    var item = details.displayItems[c];
-    itemsTable.appendChild(createItemRow(item,false));
+  if(details.displayItems) {
+    for(var c=0; c<details.displayItems.length; c++) {
+      var item = details.displayItems[c];
+      itemsTable.appendChild(createItemRow(item,false));
+    }
   }
   itemsTable.appendChild(createItemRow(details.total,true));
 }
