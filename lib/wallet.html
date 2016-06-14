@@ -9,6 +9,10 @@
   display:flex;
   align-items: center;
 }
+.flextop {
+  display:flex;
+  align-items: top;
+}
 .modal-body {
     min-height:450px;
     max-height: calc(100vh - 150px);
@@ -147,20 +151,13 @@ function populateShippingOptions() {
   var shippingOptionList = document.getElementById('shippingOptionList');
   var valid = details.shippingOptions && details.shippingOptions.length>0;
   shippingSelected = false;
+
   if(!valid) {
     shippingOption.setAttribute("disabled","disabled");
     shippingOption.textContent = '*** not available ***';
     shippingOptionList.innerHTML = '<li><a href="#">Select shipping option...</a></li>';
   } else {
     shippingOption.removeAttribute("disabled");
-    if(details.shippingOptions.length==1) {
-      var selectedOption = details.shippingOptions[0];
-      shippingOption.textContent = selectedOption.label;
-      helper.setShippingOption(selectedOption.id,false);
-      shippingSelected = true;
-    } else {
-      shippingOption.textContent = 'Select Shipping Option';
-    }
     shippingOptionList.innerHTML = "";
     for(var c=0; c<details.shippingOptions.length; c++) {
       var item = details.shippingOptions[c];
@@ -168,19 +165,26 @@ function populateShippingOptions() {
       var a = document.createElement("a");
       a.setAttribute("href","#");
       a.addEventListener("click",shippingOptionChange.bind(item),false);
-      var amount =
       a.textContent = item.label + " (" + item.amount.value + ")";
       li.appendChild(a);
       shippingOptionList.appendChild(li);
+      if(item.selected && item.selected===true) {
+        shippingOption.textContent = item.label;
+        helper.setShippingOption(item.id,false);
+        shippingSelected = true;
+      }
+    }
+
+    if(!shippingSelected) {
+      shippingOption.textContent = 'Select Shipping Option';
+      helper.setShippingOption(null,false);
     }
   }
 }
 
 function addressChange(x) {
   addressSelected = true;
-  document.getElementById("addr1").className = (x===1) ? "btn btn-primary" : "btn btn-default";
-  document.getElementById("addr2").className = (x===2) ? "btn btn-primary" : "btn btn-default";
-  document.getElementById("addr3").className = (x===3) ? "btn btn-primary" : "btn btn-default";
+  document.getElementById("selectedAddr").innerHTML = document.getElementById("addr"+x.toString()).innerHTML;
   helper.setShippingAddress({
     address:""
   });
@@ -210,6 +214,7 @@ function shippingOptionChange() {
       </div>
       <div class="modal-body">
         <!-- Card -->
+        <h4>Pay with</h4>
         <div class="dropdown">
           <button class="btn btn-default dropdown-toggle" type="button" id="cardDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             <div class="flexcenter">
@@ -217,60 +222,62 @@ function shippingOptionChange() {
             <div class="caret"></div>
             </div>
           </button>
-          <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+          <ul class="dropdown-menu" aria-labelledby="cardDropdown">
             <li><a href="#" id="card1" onclick="paymentAppChange(1)">
               <div class="flexcenter">
-                <img src="card1.png" width="180" alt="Credit card from Secure Bank">
-                <div style="padding:10px;text-align: left;"><strong>Mr Jack Smith</strong><br>6825 Amber Moor<br>Illinoistown<br>WA 98940</div>
+                <img src="card1.png" width="120" alt="Credit card from Secure Bank">
+                <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>6825 Amber Moor<br>Illinoistown<br>WA 98940</div>
               </div>
             </a></li>
             <li><a href="#" id="card2" onclick="paymentAppChange(2)">
               <div class="flexcenter">
-                <img src="card2.png" width="180" alt="Credit card from Best Bank">
-                <div style="padding:10px;text-align: left;"><strong>Mr Jack Smith</strong><br>491 Stony Gate Grove<br>Hazard<br>WA 98749</div>
+                <img src="card2.png" width="120" alt="Credit card from Best Bank">
+                <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>491 Stony Gate Grove<br>Hazard<br>WA 98749</div>
               </div>
             </a></li>
           </ul>
         </div>
 
         <!-- Address -->
-        <div id="shipping-panel">
-          <h4>Ship To</h4>
-          <div class="panel panel-default" style="display:inline-block">
-            <div class="panel-body">
-              6825 Amber Moor<br>Illinoistown<br>WA 98940<br>(253) 099-9684
-              <br><br>
-              <button id="addr1" class="btn btn-default" onclick="addressChange(1)">Use this address</button>
-            </div>
-          </div>
-          <div class="panel panel-default" style="display:inline-block">
-            <div class="panel-body">
-              491 Stony Gate Grove<br>Hazard<br>WA 98749<br>(509) 028-4863
-              <br><br>
-              <button id="addr2" class="btn btn-default" onclick="addressChange(2)">Use this address</button>
-            </div>
-          </div>
-          <div class="panel panel-default" style="display:inline-block">
-            <div class="panel-body">
-              6716 Broad Row<br>Gypsum<br>WA 98114<br>(206) 042-5222
-              <br><br>
-              <button id="addr3" class="btn btn-default" onclick="addressChange(3)">Use this address</button>
+        <div id="shipping-panel" class="flextop" style="margin-top:15px;">
+          <div>
+            <h4>Ship To</h4>
+            <div class="dropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="addrDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                <div class="flexcenter">
+                <div id="selectedAddr">Select shipping address&nbsp;</div>
+                <div class="caret"></div>
+                </div>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="addrDropdown">
+                <li><a href="#" id="addr1" onclick="addressChange(1)">
+                    <div style="padding:5px;text-align: left;">6825 Amber Moor<br>Illinoistown, WA 98940<br>(253) 099-9684</div>
+                </a></li>
+                <li><a href="#" id="addr2" onclick="addressChange(2)">
+                    <div style="padding:5px;text-align: left;">491 Stony Gate Grove<br>Hazard, WA 98749<br>(509) 028-4863</div>
+                </a></li>
+                <li><a href="#" id="addr3" onclick="addressChange(3)">
+                    <div style="padding:5px;text-align: left;">6716 Broad Row<br>Gypsum, WA 98114<br>(206) 042-5222</div>
+                </a></li>
+              </ul>
             </div>
           </div>
 
-          <h4>Shipping Option</h4>
-          <div class="dropdown">
-            <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
-              Select Shipping Option
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
-              <li><a href="#">Select shipping option...</a></li>
-            </ul>
+          <div style="padding-left:20px;">
+            <h4>Shipping Option</h4>
+            <div class="dropdown">
+              <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
+                Select Shipping Option
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
+                <li><a href="#">Select shipping option...</a></li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <h4>Summary</h4>
+        <h4 style="margin-top:15px;">Summary</h4>
           <!-- Items Table -->
           <table class="table table-striped">
             <tbody id="itemsTable">
