@@ -9,6 +9,16 @@
     #script-display .line { position: absolute; left: 0; width: 30px; text-align: right; display: inline-block; padding-right:3px; border-right: 1px solid grey; }
   </style>
   <script src="lib/paymentrequest.js"></script>
+  <script>
+  function go1() {
+    window.__walletUrl = "lib/wallet.html";
+    go();
+  }
+  function go2() {
+    window.__walletUrl = "lib/wallet2.html";
+    go();
+  }
+  </script>
   <script language="javascript" id="payment-script">
   function go() {
     var request = new PaymentRequest(
@@ -93,7 +103,10 @@
 </head>
 <body style="margin:1em;">
   <a href="index.html">Index</a>
-  <button class="btn btn-success" onclick="go()">Request shipping address and calculate shipping options</button>
+
+  <h2>Request shipping address and calculate shipping options</h2>
+  <button class="btn btn-success" onclick="go1()">Sample 1</button>
+  <button class="btn btn-success" onclick="go2()">Sample 2</button>
 
   <div>
   <h3>Script</h3>

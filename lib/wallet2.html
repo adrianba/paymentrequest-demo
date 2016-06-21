@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Demo Wallet</title>
+<title>Demo Wallet 2</title>
 <script src="paymentrequest-wallethelper.js"></script>
 <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
 <style>
@@ -14,9 +14,13 @@
   align-items: top;
 }
 .modal-body {
-    min-height:450px;
+    min-height:250px;
     max-height: calc(100vh - 150px);
     overflow-y: auto;
+}
+
+#page-two, #backButton, #buyButton {
+  display:none;
 }
 </style>
 <script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
@@ -66,7 +70,7 @@ function init(data) {
     }
   });
 
-  updateBuyButton();
+  updateButtons();
 
   populateItemsTable();
   populateShippingOptions();
@@ -94,12 +98,12 @@ function update(updatedDetails) {
     details.shippingOptions = updatedDetails.shippingOptions;
     populateShippingOptions();
   }
-  updateBuyButton();
+  updateButtons();
 }
 
 function updating(data) {
   isUpdating = data;
-  updateBuyButton();
+  updateButtons();
 }
 
 function buy() {
@@ -110,14 +114,14 @@ function buy() {
   });
 }
 
-function updateBuyButton() {
+function updateButtons() {
   var enabled = !options.requestShipping || (addressSelected && shippingSelected);
   if(isUpdating) enabled = false;
 
   if(enabled) {
-    document.getElementById('buyButton').removeAttribute('disabled');
+    document.getElementById('nextButton').removeAttribute('disabled');
   } else {
-    document.getElementById('buyButton').setAttribute('disabled','disabled');
+    document.getElementById('nextButton').setAttribute('disabled','disabled');
   }
 }
 
@@ -144,6 +148,7 @@ function populateItemsTable() {
     }
   }
   itemsTable.appendChild(createItemRow(details.total,true));
+  document.getElementById("total-amount").innerHTML = details.total.amount.value.toString();
 }
 
 function populateShippingOptions() {
@@ -188,7 +193,7 @@ function addressChange(x) {
   helper.setShippingAddress({
     address:""
   });
-  updateBuyButton();
+  updateButtons();
 }
 
 function paymentAppChange(x) {
@@ -200,7 +205,23 @@ function shippingOptionChange() {
   shippingSelected = true;
   document.getElementById('shippingOption').textContent = this.label;
   helper.setShippingOption(this.id,true);
-  updateBuyButton();
+  updateButtons();
+}
+
+function goBack() {
+  document.getElementById("page-one").style.display = "block";
+  document.getElementById("page-two").style.display = "none";
+  document.getElementById("backButton").style.display = "none";
+  document.getElementById("nextButton").style.display = "inline";
+  document.getElementById("buyButton").style.display = "none";
+}
+
+function goNext() {
+  document.getElementById("page-one").style.display = "none";
+  document.getElementById("page-two").style.display = "block";
+  document.getElementById("backButton").style.display = "inline";
+  document.getElementById("nextButton").style.display = "none";
+  document.getElementById("buyButton").style.display = "inline";
 }
 </script>
 </head>
@@ -213,83 +234,91 @@ function shippingOptionChange() {
         <h4 class="modal-title" id="myModalLabel">Payment Requested from <span id="originname"></span></h4>
       </div>
       <div class="modal-body">
-        <!-- Card -->
-        <h4>Pay with</h4>
-        <div class="dropdown">
-          <button class="btn btn-default dropdown-toggle" type="button" id="cardDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-            <div class="flexcenter">
-            <div id="selectedCard"></div>
-            <div class="caret"></div>
-            </div>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="cardDropdown">
-            <li><a href="#" id="card1" onclick="paymentAppChange(1)">
-              <div class="flexcenter">
-                <img src="card1.png" width="120" alt="Credit card from Secure Bank">
-                <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>6825 Amber Moor<br>Illinoistown<br>WA 98940</div>
-              </div>
-            </a></li>
-            <li><a href="#" id="card2" onclick="paymentAppChange(2)">
-              <div class="flexcenter">
-                <img src="card2.png" width="120" alt="Credit card from Best Bank">
-                <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>491 Stony Gate Grove<br>Hazard<br>WA 98749</div>
-              </div>
-            </a></li>
-          </ul>
-        </div>
 
-        <!-- Address -->
-        <div id="shipping-panel" class="flextop" style="margin-top:15px;">
-          <div>
-            <h4>Ship To</h4>
-            <div class="dropdown">
-              <button class="btn btn-default dropdown-toggle" type="button" id="addrDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <div id="page-two" style="margin-bottom:150px;">
+          <!-- Card -->
+          <h4>Pay with</h4>
+          <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="cardDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              <div class="flexcenter">
+              <div id="selectedCard"></div>
+              <div class="caret"></div>
+              </div>
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="cardDropdown">
+              <li><a href="#" id="card1" onclick="paymentAppChange(1)">
                 <div class="flexcenter">
-                <div id="selectedAddr">Select shipping address&nbsp;</div>
-                <div class="caret"></div>
+                  <img src="card1.png" width="120" alt="Credit card from Secure Bank">
+                  <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>6825 Amber Moor<br>Illinoistown<br>WA 98940</div>
                 </div>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="addrDropdown">
-                <li><a href="#" id="addr1" onclick="addressChange(1)">
-                    <div style="padding:5px;text-align: left;">6825 Amber Moor<br>Illinoistown, WA 98940<br>(253) 099-9684</div>
-                </a></li>
-                <li><a href="#" id="addr2" onclick="addressChange(2)">
-                    <div style="padding:5px;text-align: left;">491 Stony Gate Grove<br>Hazard, WA 98749<br>(509) 028-4863</div>
-                </a></li>
-                <li><a href="#" id="addr3" onclick="addressChange(3)">
-                    <div style="padding:5px;text-align: left;">6716 Broad Row<br>Gypsum, WA 98114<br>(206) 042-5222</div>
-                </a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div style="padding-left:20px;">
-            <h4>Shipping Option</h4>
-            <div class="dropdown">
-              <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
-                Select Shipping Option
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
-                <li><a href="#">Select shipping option...</a></li>
-              </ul>
-            </div>
+              </a></li>
+              <li><a href="#" id="card2" onclick="paymentAppChange(2)">
+                <div class="flexcenter">
+                  <img src="card2.png" width="120" alt="Credit card from Best Bank">
+                  <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>491 Stony Gate Grove<br>Hazard<br>WA 98749</div>
+                </div>
+              </a></li>
+            </ul>
           </div>
         </div>
 
-        <h4 style="margin-top:15px;">Summary</h4>
+        <div id="page-one">
+
+          <!-- Address -->
+          <div id="shipping-panel" class="flextop" style="margin-top:15px;">
+            <div>
+              <h4>Ship To</h4>
+              <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="addrDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                  <div class="flexcenter">
+                  <div id="selectedAddr">Select shipping address&nbsp;</div>
+                  <div class="caret"></div>
+                  </div>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="addrDropdown">
+                  <li><a href="#" id="addr1" onclick="addressChange(1)">
+                      <div style="padding:5px;text-align: left;">6825 Amber Moor<br>Illinoistown, WA 98940<br>(253) 099-9684</div>
+                  </a></li>
+                  <li><a href="#" id="addr2" onclick="addressChange(2)">
+                      <div style="padding:5px;text-align: left;">491 Stony Gate Grove<br>Hazard, WA 98749<br>(509) 028-4863</div>
+                  </a></li>
+                  <li><a href="#" id="addr3" onclick="addressChange(3)">
+                      <div style="padding:5px;text-align: left;">6716 Broad Row<br>Gypsum, WA 98114<br>(206) 042-5222</div>
+                  </a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="padding-left:20px;">
+              <h4>Shipping Option</h4>
+              <div class="dropdown">
+                <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
+                  Select Shipping Option
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
+                  <li><a href="#">Select shipping option...</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <h4 style="margin-top:15px;">Summary</h4>
           <!-- Items Table -->
           <table class="table table-striped">
             <tbody id="itemsTable">
             </tbody>
           </table>
-      <div class="modal-footer" style="padding-right:0px;">
-        <div style="float:left;" id="statusMessage"></div>
-        <button type="button" id="cancelButton" class="btn btn-default" data-dismiss="modal">Cancel</button>
-        <button type="submit" id="buyButton" class="btn btn-primary" onclick="buy()" disabled="disabled">Authorise</button>
+        </div>
+
+        <div class="modal-footer" style="padding-right:0px;">
+          <button type="button" id="cancelButton" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" id="backButton" class="btn" onclick="goBack()">Back</button>
+          <button type="submit" id="nextButton" class="btn btn-primary" onclick="goNext()" disabled="disabled">Next</button>
+          <button type="submit" id="buyButton" class="btn btn-primary" onclick="buy()">Authorise <span id="total-amount"></span></button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </body>
 </html>
