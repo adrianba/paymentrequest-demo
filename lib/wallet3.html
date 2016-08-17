@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Demo Wallet 2</title>
+<script src="paymentrequest-wallethelper.js"></script>
+<link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/css/bootstrap.css">
+<style>
+.flexcenter {
+  display:flex;
+  align-items: center;
+}
+.flextop {
+  display:flex;
+  align-items: top;
+}
+.modal-body {
+    min-height:250px;
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+}
+
+#page-two, #page-three, #backButton {
+  display:none;
+}
+</style>
+<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+<script src="//ajax.aspnetcdn.com/ajax/bootstrap/3.3.6/bootstrap.min.js"></script>
+
+<script>
+"use strict";
+
+var helper = new PaymentRequestWalletHelper();
+helper.oninit = init;
+helper.onupdate = update;
+helper.onupdating = updating;
+
+var acceptableMethods = ['urn:payment:visa','urn:payment:mc'];
+var acceptedPurchase = false;
+var addressSelected = false;
+var shippingSelected = false;
+var details,options,methodData;
+var isUpdating = false;
+var selectedPaymentApp = 1;
+
+function init(data) {
+  // Validate whether any supported methods are accepted
+  var accepted = helper.acceptedMethodIntersection(data.methodData,acceptableMethods);
+  if(accepted.length==0) {
+    helper.rejectPromise({name:"NotSupportedError"});
+    return;
+  }
+
+  details = data.details;
+  options = data.options;
+  methodData = data.data;
+
+  if(!options.requestShipping) {
+    document.getElementById("shipping-panel").style.display = "none";
+  }
+
+  if(data.origin) {
+    document.getElementById("originname").textContent = data.origin;
+  }
+
+  paymentAppChange(1,false);
+
+  $('#myModal').on('hide.bs.modal', function (e) {
+    if(!acceptedPurchase) {
+      helper.rejectPromise({name:'cancelled'});
+    }
+  });
+
+  updateButtons();
+
+  populateItemsTable();
+  populateShippingOptions();
+
+  $('#myModal').modal({
+    backdrop: 'static',
+    keyboard: true,
+    show: true
+  });
+}
+
+function update(updatedDetails) {
+  // update wallet display
+  if(updatedDetails.total) {
+    details.total = updatedDetails.total;
+  }
+  if(updatedDetails.displayItems) {
+    details.displayItems = updatedDetails.displayItems;
+  }
+  if(updatedDetails.total || updatedDetails.displayItems) {
+    details.displayItems = updatedDetails.displayItems;
+    populateItemsTable();
+  }
+  if(updatedDetails.shippingOptions) {
+    details.shippingOptions = updatedDetails.shippingOptions;
+    populateShippingOptions();
+  }
+  updateButtons();
+}
+
+function updating(data) {
+  isUpdating = data;
+  updateButtons();
+}
+
+function buy() {
+  acceptedPurchase = true;
+  helper.acceptPayment({
+    methodName: acceptableMethods[selectedPaymentApp-1],
+    data: {}
+  });
+}
+
+function updateButtons() {
+  var enabled = !options.requestShipping || (addressSelected && shippingSelected);
+  if(isUpdating) enabled = false;
+
+  if(enabled) {
+    document.getElementById('nextButton').removeAttribute('disabled');
+  } else {
+    document.getElementById('nextButton').setAttribute('disabled','disabled');
+  }
+}
+
+function createItemRow(item,isTotal) {
+    var tr = document.createElement("tr");
+    if(isTotal) tr.className = "success";
+    var label = document.createElement("td");
+    label.textContent = item.label;
+    var price = document.createElement("td");
+    price.setAttribute("align","right");
+    price.textContent = item.amount.value;
+    if(item.amount.currencyCode==="USD") {
+      price.textContent = "$" + price.textContent;
+    }
+    tr.appendChild(label);
+    tr.appendChild(price);
+    return tr;
+}
+
+function populateItemsTable() {
+  var itemsTable = document.getElementById('itemsTable');
+  itemsTable.innerHTML = "";
+  if(details.displayItems) {
+    for(var c=0; c<details.displayItems.length; c++) {
+      var item = details.displayItems[c];
+      itemsTable.appendChild(createItemRow(item,false));
+    }
+  }
+  itemsTable.appendChild(createItemRow(details.total,true));
+  var total = details.total.amount.value;
+  if(details.total.amount.currencyCode==="USD") {
+    total = "$" + total;
+  }
+  document.getElementById("total-amount").innerHTML = total;
+  document.getElementById("total-amount2").innerHTML = total;
+  document.getElementById("total-amount3").innerHTML = total;
+  document.getElementById("total-amount4").innerHTML = "$58.00"; //total;
+}
+
+function populateShippingOptions() {
+  var shippingOption = document.getElementById('shippingOption');
+  var shippingOptionList = document.getElementById('shippingOptionList');
+  var valid = details.shippingOptions && details.shippingOptions.length>0;
+  shippingSelected = false;
+
+  if(!valid) {
+    shippingOption.setAttribute("disabled","disabled");
+    shippingOption.textContent = '*** not available ***';
+    shippingOptionList.innerHTML = '<li><a href="#">Select shipping option...</a></li>';
+  } else {
+    shippingOption.removeAttribute("disabled");
+    shippingOptionList.innerHTML = "";
+    for(var c=0; c<details.shippingOptions.length; c++) {
+      var item = details.shippingOptions[c];
+      var li = document.createElement("li");
+      var a = document.createElement("a");
+      a.setAttribute("href","#");
+      a.addEventListener("click",shippingOptionChange.bind(item),false);
+      a.textContent = item.label + " (" + item.amount.value + ")";
+      li.appendChild(a);
+      shippingOptionList.appendChild(li);
+      if(item.selected && item.selected===true) {
+        shippingOption.textContent = item.label;
+        helper.setShippingOption(item.id,false);
+        shippingSelected = true;
+      }
+    }
+
+    if(!shippingSelected) {
+      shippingOption.textContent = 'Select Shipping Option';
+      helper.setShippingOption(null,false);
+    }
+  }
+}
+
+function addressChange(x) {
+  addressSelected = true;
+  document.getElementById("selectedAddr").innerHTML = document.getElementById("addr"+x.toString()).innerHTML;
+  helper.setShippingAddress({
+    address:""
+  });
+  updateButtons();
+}
+
+function paymentAppChange(x,clickBuy) {
+  selectedPaymentApp = x;
+  if(clickBuy) {
+    goCVV();
+  }
+}
+
+function shippingOptionChange() {
+  shippingSelected = true;
+  document.getElementById('shippingOption').textContent = this.label;
+  helper.setShippingOption(this.id,true);
+  updateButtons();
+}
+
+function goBack() {
+  document.getElementById("page-one").style.display = "block";
+  document.getElementById("page-two").style.display = "none";
+  document.getElementById("backButton").style.display = "none";
+  document.getElementById("nextButton").style.display = "inline";
+}
+
+function goNext() {
+  document.getElementById("page-one").style.display = "none";
+  document.getElementById("page-two").style.display = "block";
+  document.getElementById("backButton").style.display = "inline";
+  document.getElementById("nextButton").style.display = "none";
+}
+
+function goCVV() {
+  document.getElementById("page-one").style.display = "none";
+  document.getElementById("page-two").style.display = "none";
+  document.getElementById("page-three").style.display = "block";
+  document.getElementById("backButton").style.display = "none";
+  document.getElementById("nextButton").style.display = "none";
+}
+</script>
+</head>
+<body style="background-color:transparent;">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Payment Requested from <span id="originname"></span></h4>
+      </div>
+      <div class="modal-body">
+
+        <div id="page-three">
+          <form class="form-inline" style="margin-bottom:30px">
+            <div class="form-group">
+              <label for="cvv">Please enter card security code</label>
+              <input type="text" class="form-control" id="cvv" placeholder="CVV" autocomplete="false">
+              <button class="btn btn-default" onclick="buy()">Authorise <span id="total-amount"></span></button>
+            </div>
+          </form>
+        </div>
+
+        <div id="page-two" style="margin-bottom:20px;">
+          <!-- Card -->
+          <h4>Pay with</h4>
+
+          <div style="margin-bottom:20px">
+            <button class="btn btn-default" type="button" onclick="paymentAppChange(1,true)">
+              <div class="flexcenter">
+              <div>
+                <div class="flexcenter">
+                  <img src="card1.png" width="120" alt="Credit card from Secure Bank">
+                  <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>6825 Amber Moor<br>Illinoistown<br>WA 98940</div>
+                </div>
+              </div>
+              <div style="padding-left:10px;padding-right:10px;">
+                <span id="total-amount2"></span>
+              </div>
+              <div class="glyphicon glyphicon-play"></div>
+              </div>
+            </button>
+          </div>
+
+          <div style="margin-bottom:20px">
+            <button class="btn btn-default" type="button" onclick="paymentAppChange(2,true)">
+              <div class="flexcenter">
+              <div>
+                <div class="flexcenter">
+                    <img src="card2.png" width="120" alt="Credit card from Best Bank">
+                    <div style="padding:5px;text-align: left;"><strong>Mr Jack Smith</strong><br>491 Stony Gate Grove<br>Hazard<br>WA 98749</div>
+                </div>
+              </div>
+              <div style="padding-left:10px;padding-right:10px;">
+                <span id="total-amount3"></span>
+              </div>
+              <div class="glyphicon glyphicon-play"></div>
+              </div>
+            </button>
+          </div>
+
+          <div style="margin-bottom:20px">
+            <button class="btn btn-default" type="button" onclick="paymentAppChange(3,true)">
+              <div class="flexcenter">
+              <div>
+                <div class="flexcenter">
+                <span style="position:relative;width:100px;height:100px;font-size:100px;" class="glyphicon glyphicon-globe"></span>
+                    <div style="padding:5px;text-align: left;"><strong>Pay with BobPay.com</strong></div>
+                </div>
+              </div>
+              <div style="padding-left:10px;padding-right:10px;">
+                <span id="total-amount4"></span>
+              </div>
+              <div class="glyphicon glyphicon-play"></div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div id="page-one">
+
+          <!-- Address -->
+          <div id="shipping-panel" class="flextop" style="margin-top:15px;">
+            <div>
+              <h4>Ship To</h4>
+              <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle" type="button" id="addrDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                  <div class="flexcenter">
+                  <div id="selectedAddr">Select shipping address&nbsp;</div>
+                  <div class="caret"></div>
+                  </div>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="addrDropdown">
+                  <li><a href="#" id="addr1" onclick="addressChange(1)">
+                      <div style="padding:5px;text-align: left;">6825 Amber Moor<br>Illinoistown, WA 98940<br>(253) 099-9684</div>
+                  </a></li>
+                  <li><a href="#" id="addr2" onclick="addressChange(2)">
+                      <div style="padding:5px;text-align: left;">491 Stony Gate Grove<br>Hazard, WA 98749<br>(509) 028-4863</div>
+                  </a></li>
+                  <li><a href="#" id="addr3" onclick="addressChange(3)">
+                      <div style="padding:5px;text-align: left;">6716 Broad Row<br>Gypsum, WA 98114<br>(206) 042-5222</div>
+                  </a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div style="padding-left:20px;">
+              <h4>Shipping Option</h4>
+              <div class="dropdown">
+                <button id="shippingOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" disabled>
+                  Select Shipping Option
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="shippingOption" id="shippingOptionList">
+                  <li><a href="#">Select shipping option...</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <h4 style="margin-top:15px;">Summary</h4>
+          <!-- Items Table -->
+          <table class="table table-striped">
+            <tbody id="itemsTable">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="modal-footer" style="padding-right:0px;">
+          <button type="button" id="cancelButton" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" id="backButton" class="btn" onclick="goBack()">Back</button>
+          <button type="submit" id="nextButton" class="btn btn-primary" onclick="goNext()" disabled="disabled">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
